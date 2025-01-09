@@ -1,2 +1,2 @@
 TOKEN = r'secrets.TOKEN'
-API_KEY = r'06ad8be31205446e8f0165038250501'
+API_KEY = r'sectrets.API_KEY'
