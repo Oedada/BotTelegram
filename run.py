@@ -1,8 +1,6 @@
 import asyncio
 import logging
 
-import requests
-
 from aiogram import Bot, Dispatcher
 from app.handlers import router as main_router
 from app.weather_handlers import router as weather_router
@@ -10,9 +8,6 @@ from config import TOKEN
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
-
-
-
 
 
 async def main():
