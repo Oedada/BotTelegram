@@ -10,14 +10,14 @@ class users_db:
     def get_data(self) -> dict:
         return self.data
 
-    def set_user_param(self, id, param, value) -> None:
-        self.data[id] = {param: value}
+    def set_user_param(self, id: str, param: str, value) -> None:
+        if id in self.data.keys():
+            self.data[id][param] = value
+        else:
+            self.data[id] = {param: value}
 
     def get_user_data(self, id) -> dict:
         return self.data[id]
-
-    def get_registred_ids(self) -> list:
-        return list(self.data.keys())
 
     def save(self) -> None:
         with open('app/users.json', 'w') as file:

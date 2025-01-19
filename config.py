@@ -1,2 +1,2 @@
-TOKEN = r'secrets.TOKEN'
-API_KEY = r'sectrets.API_KEY'
+TOKEN = r'7604700170:AAEF4Xuj6Bnhu1bC8Qu64jUXpI1B5Errkzg'
+API_KEY = r'f736179b72d7bb6450cf60df4f7226f4'
