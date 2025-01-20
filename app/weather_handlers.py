@@ -5,6 +5,7 @@ from aiogram.filters import CommandStart
 import aiohttp
 from config import API_KEY
 from app.user_processor import users_db
+from datetime import datetime
 
 
 import app.keyboard as kb
@@ -21,37 +22,84 @@ async def cmd_start(message: Message):
 async def change_city(message: Message):
     '''Once again sends user a message with list of cities'''
     db.set_user_param(message.from_user.id, 'latitude', "%.20f" % message.location.latitude)
-    print(message.location.latitude)
-    db.save()
     db.set_user_param(message.from_user.id, 'longitude', "%.20f" % message.location.longitude)
-    print(message.location.longitude)
     db.save()
     await message.answer('Ваша позиция обработана, выберите, какую погоду вы хотите получить.', reply_markup=kb.change_pos)
 
 
 @router.callback_query(F.data == "weather_now")
-async def change_city(callback: CallbackQuery):
-    data = db.get_user_data(callback.from_user.id)
+async def weather_now(callback: CallbackQuery):
+    data = db.get_user_data(str(callback.from_user.id))
     lon = data['longitude']
     lat = data['latitude']
     weather = await get_weather(lon, lat, time=0)
     return callback.message.answer(weather)
 
 
+@router.callback_query(F.data == "wheather_forecast")
+async def wheather_forecast(callback: CallbackQuery):
+    data = db.get_user_data(str(callback.from_user.id))
+    lon = data['longitude']
+    lat = data['latitude']
+    weather = await get_weather(lon, lat, time=1)
+    return callback.message.answer(weather)
+
+
 async def get_weather(longitude, latitude, time) -> str:
     '''Return string contain information about weather'''
-    #https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={API key}
-    params = {
-        'lat': latitude,
-        'lon': longitude,
-        'appid': API_KEY
-    }
-    weather = await get_api_response('https://api.openweathermap.org/data/2.5/weather/', params)
-    temp = str(round(weather['main']['temp'] - 273.15, 1)) + ' °С'
-    cloud = ('пасмурно' if weather['clouds']['all'] >= 80 else 'ясно')
-    wind = str(round(weather['wind']['speed'], 1)) + ' м/с'
-    answer = f'В городе сейчас {temp}, {cloud}, скорость ветра {wind}'
-    return answer
+    if time == 0:
+        params = {
+            'lat': latitude,
+            'lon': longitude,
+            'appid': API_KEY
+        }
+        weather = await get_api_response('https://api.openweathermap.org/data/2.5/weather/', params)
+        temp = str(round(weather['main']['temp'] - 273.15, 1)) + ' °С'
+        cloud = ('пасмурно' if weather['clouds']['all'] >= 80 else 'ясно')
+        wind = str(round(weather['wind']['speed'], 1)) + ' м/с'
+        answer = f'В городе сейчас {temp}, {cloud}, скорость ветра {wind}'
+        return answer
+    else:
+        params = {
+            'lat': latitude,
+            'lon': longitude,
+            'appid': API_KEY
+        }
+        weathers = await get_api_response('https://pro.openweathermap.org/data/2.5/forecast', params)
+        weathers = weathers["list"]
+        true_weather = []
+        for wheather in weathers:
+            weather_time = datetime.utcfromtimestamp(wheather["dt"]).strftime('%Y-%m-%d %H:%M:%S')
+            if weather_time.split(" ")[0] != datetime.now().strftime('%Y-%m-%d'):
+                true_weather.append(wheather)
+        weathers = true_weather
+        morning = true_weather[3+(time-1)]
+        noon = true_weather[5+(time-1)  ]
+        evening = true_weather[7+(time-1)]
+        night =  true_weather[8+(time-1)]
+
+        temp = str(round(morning['main']['temp'] - 273.15, 1)) + ' °С'
+        cloud = ('пасмурно' if morning['clouds']['all'] >= 80 else 'ясно')
+        wind = str(round(morning['wind']['speed'], 1)) + ' м/с'
+        morning_string = f'{temp}, {cloud}, скорость ветра {wind}'
+
+        temp = str(round(noon['main']['temp'] - 273.15, 1)) + ' °С'
+        cloud = ('пасмурно' if noon['clouds']['all'] >= 80 else 'ясно')
+        wind = str(round(noon['wind']['speed'], 1)) + ' м/с'
+        noon_string = f'{temp}, {cloud}, скорость ветра {wind}'
+
+        temp = str(round(evening['main']['temp'] - 273.15, 1)) + ' °С'
+        cloud = ('пасмурно' if evening['clouds']['all'] >= 80 else 'ясно')
+        wind = str(round(evening['wind']['speed'], 1)) + ' м/с'
+        evening_string = f'{temp}, {cloud}, скорость ветра {wind}'
+
+        temp = str(round(night['main']['temp'] - 273.15, 1)) + ' °С'
+        cloud = ('пасмурно' if night['clouds']['all'] >= 80 else 'ясно')
+        wind = str(round(night['wind']['speed'], 1)) + ' м/с'
+        night_string = f'{temp}, {cloud}, скорость ветра {wind}'
+
+        answer = "Утром: " + morning_string + "\n" + "Днём: " + noon_string + "\n" + "Вечером: " + evening_string + "\n" + "Ночь: " + night_string
+        return answer
 
 
 async def get_api_response(url, params):
