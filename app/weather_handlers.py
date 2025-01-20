@@ -5,8 +5,10 @@ from aiogram.filters import CommandStart
 import aiohttp
 from config import API_KEY
 from app.user_processor import users_db
-from datetime import datetime
-
+from datetime import datetime, timedelta
+twoday = (datetime.now() + timedelta(2)).weekday()
+threeday = (datetime.now() + timedelta(3)).weekday()
+weekdays = {0: "Понедельник", 1:"Вторник", 2: "Среда", 3: "Четверг", 4: "Пятница", 5: "Суббота", 6: "Воскресение"}
 
 import app.keyboard as kb
 
@@ -38,11 +40,40 @@ async def weather_now(callback: CallbackQuery):
 
 @router.callback_query(F.data == "wheather_forecast")
 async def wheather_forecast(callback: CallbackQuery):
+    return callback.message.answer("Выберите день", reply_markup=kb.select_day)
+
+
+@router.callback_query(F.data == "tomorrow")
+async def wheather_tommorow(callback: CallbackQuery):
     data = db.get_user_data(str(callback.from_user.id))
-    lon = data['longitude']
+    lon = data["longitude"]
     lat = data['latitude']
-    weather = await get_weather(lon, lat, time=1)
-    return callback.message.answer(weather)
+    return callback.message.answer("Завтра: \n" + (await get_weather(lon, lat, 1)))
+
+
+@router.callback_query(F.data == "after_tomorrow")
+async def wheather_tommorow(callback: CallbackQuery):
+    data = db.get_user_data(str(callback.from_user.id))
+    lon = data["longitude"]
+    lat = data['latitude']
+    return callback.message.answer("Послезавтра: \n" + (await get_weather(lon, lat, 2)))
+
+
+@router.callback_query(F.data == "aa_tomorrow")
+async def wheather_tommorow(callback: CallbackQuery):
+    data = db.get_user_data(str(callback.from_user.id))
+    lon = data["longitude"]
+    lat = data['latitude']
+    return callback.message.answer(weekdays[twoday] + ":\n" + (await get_weather(lon, lat, 3)))
+
+
+@router.callback_query(F.data == "aaa_tomorrow")
+async def wheather_tommorow(callback: CallbackQuery):
+    data = db.get_user_data(str(callback.from_user.id))
+    lon = data["longitude"]
+    lat = data['latitude']
+    return callback.message.answer(weekdays[threeday] + ":\n" + (await get_weather(lon, lat, 4)))
+
 
 
 async def get_weather(longitude, latitude, time) -> str:
@@ -57,7 +88,7 @@ async def get_weather(longitude, latitude, time) -> str:
         temp = str(round(weather['main']['temp'] - 273.15, 1)) + ' °С'
         cloud = ('пасмурно' if weather['clouds']['all'] >= 80 else 'ясно')
         wind = str(round(weather['wind']['speed'], 1)) + ' м/с'
-        answer = f'В городе сейчас {temp}, {cloud}, скорость ветра {wind}'
+        answer = f'Сейчас {temp}, {cloud}, скорость ветра {wind}'
         return answer
     else:
         params = {
