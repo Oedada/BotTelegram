@@ -23,8 +23,8 @@ async def cmd_start(message: Message):
 @router.message(F.location)
 async def change_city(message: Message):
     '''Once again sends user a message with list of cities'''
-    db.set_user_param(message.from_user.id, 'latitude', "%.20f" % message.location.latitude)
-    db.set_user_param(message.from_user.id, 'longitude', "%.20f" % message.location.longitude)
+    db.set_user_param(str(message.from_user.id), 'latitude', "%.20f" % message.location.latitude)
+    db.set_user_param(str(message.from_user.id), 'longitude', "%.20f" % message.location.longitude)
     db.save()
     await message.answer('Ваша позиция обработана, выберите, какую погоду вы хотите получить.', reply_markup=kb.change_pos)
 
@@ -66,13 +66,6 @@ async def wheather_tommorow(callback: CallbackQuery):
     lat = data['latitude']
     return callback.message.answer(weekdays[twoday] + ":\n" + (await get_weather(lon, lat, 3)))
 
-
-@router.callback_query(F.data == "aaa_tomorrow")
-async def wheather_tommorow(callback: CallbackQuery):
-    data = db.get_user_data(str(callback.from_user.id))
-    lon = data["longitude"]
-    lat = data['latitude']
-    return callback.message.answer(weekdays[threeday] + ":\n" + (await get_weather(lon, lat, 4)))
 
 
 

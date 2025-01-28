@@ -12,8 +12,7 @@ change_pos = InlineKeyboardMarkup(inline_keyboard=[
 select_day = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Завтра',  callback_data='tomorrow')],
     [InlineKeyboardButton(text='Послезавтра',  callback_data='after_tomorrow')],
-    [InlineKeyboardButton(text=weekdays[twoday],  callback_data='aa_tomorrow')],
-    [InlineKeyboardButton(text=weekdays[threeday],  callback_data='aaa_tomorrow')]
+    [InlineKeyboardButton(text=weekdays[twoday],  callback_data='aa_tomorrow')]
 ])
 
 
