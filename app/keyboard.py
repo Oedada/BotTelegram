@@ -1,5 +1,4 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardButton, InlineKeyboardMarkup
-from aiogram.utils.keyboard import InlineKeyboardBuilder
 from datetime import datetime, timedelta
 twoday = (datetime.now() + timedelta(2)).weekday()
 threeday = (datetime.now() + timedelta(3)).weekday()
@@ -14,5 +13,6 @@ select_day = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Послезавтра',  callback_data='after_tomorrow')],
     [InlineKeyboardButton(text=weekdays[twoday],  callback_data='aa_tomorrow')]
 ])
-
-
+weather = ReplyKeyboardMarkup(keyboard=[
+    [KeyboardButton(text="Посмотреть погоду")]
+], resize_keyboard=True)

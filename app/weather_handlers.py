@@ -26,8 +26,12 @@ async def change_city(message: Message):
     db.set_user_param(str(message.from_user.id), 'latitude', "%.20f" % message.location.latitude)
     db.set_user_param(str(message.from_user.id), 'longitude', "%.20f" % message.location.longitude)
     db.save()
-    await message.answer('Ваша позиция обработана, выберите, какую погоду вы хотите получить.', reply_markup=kb.change_pos)
+    await message.answer('Ваша позиция обработана, теперь вы можете посмотреть погоду в любое время по кнопке', reply_markup=kb.weather)
 
+
+@router.message(F.text == "Посмотреть погоду")
+async def choose_weather(message: Message):
+    await message.answer("Выберите режим", reply_markup=kb.change_pos)
 
 @router.callback_query(F.data == "weather_now")
 async def weather_now(callback: CallbackQuery):
